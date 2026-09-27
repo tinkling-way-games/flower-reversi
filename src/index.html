@@ -3,18 +3,255 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="description" content="ブラウザで遊べるリバーシ系ゲーム Flower Reversi" />
-    <meta name="theme-color" content="#2f6b3a" />
+    <meta name="description" content="赤と青の花で遊ぶリバーシ。ブラウザだけで遊べます。" />
+    <meta name="theme-color" content="#fbf6ee" />
     <title>Flower Reversi</title>
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <main class="app">
-      <h1 class="title">Flower Reversi</h1>
-      <p class="lead">準備中です。</p>
-      <p class="visits" id="visits"></p>
-    </main>
+    <!-- 花のスプライト。各マスから <use href="#flower-red"> で参照する -->
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <defs>
+        <radialGradient id="g-red-outer" cx="50%" cy="85%" r="90%">
+          <stop offset="0" stop-color="#ff8fa3" />
+          <stop offset="0.55" stop-color="#d90429" />
+          <stop offset="1" stop-color="#7a0019" />
+        </radialGradient>
+        <radialGradient id="g-red-mid" cx="50%" cy="90%" r="85%">
+          <stop offset="0" stop-color="#ffb3c1" />
+          <stop offset="0.6" stop-color="#ef233c" />
+          <stop offset="1" stop-color="#9d0208" />
+        </radialGradient>
+        <radialGradient id="g-red-inner" cx="50%" cy="90%" r="80%">
+          <stop offset="0" stop-color="#ffe5ec" />
+          <stop offset="1" stop-color="#ff4d6d" />
+        </radialGradient>
+        <radialGradient id="g-gold" cx="40%" cy="35%" r="70%">
+          <stop offset="0" stop-color="#fff8d6" />
+          <stop offset="0.5" stop-color="#ffd166" />
+          <stop offset="1" stop-color="#b8860b" />
+        </radialGradient>
+        <radialGradient id="g-blue-petal" cx="50%" cy="95%" r="95%">
+          <stop offset="0" stop-color="#ffffff" />
+          <stop offset="0.35" stop-color="#d6ecff" />
+          <stop offset="1" stop-color="#5b9bd5" />
+        </radialGradient>
+        <path id="petal-long" d="M0 0 C-13 -9 -13 -33 0 -44 C13 -33 13 -9 0 0Z" />
+        <circle id="petal-round" cx="0" cy="-19" r="17" />
+      </defs>
+
+      <symbol id="flower-red" viewBox="-50 -50 100 100">
+        <g fill="url(#g-red-outer)" stroke="#e9b949" stroke-width="1.2">
+          <use href="#petal-long" transform="rotate(0)" />
+          <use href="#petal-long" transform="rotate(36)" />
+          <use href="#petal-long" transform="rotate(72)" />
+          <use href="#petal-long" transform="rotate(108)" />
+          <use href="#petal-long" transform="rotate(144)" />
+          <use href="#petal-long" transform="rotate(180)" />
+          <use href="#petal-long" transform="rotate(216)" />
+          <use href="#petal-long" transform="rotate(252)" />
+          <use href="#petal-long" transform="rotate(288)" />
+          <use href="#petal-long" transform="rotate(324)" />
+        </g>
+        <g fill="url(#g-red-mid)" stroke="#7a0019" stroke-width="0.6" transform="scale(0.72) rotate(18)">
+          <use href="#petal-long" transform="rotate(0)" />
+          <use href="#petal-long" transform="rotate(45)" />
+          <use href="#petal-long" transform="rotate(90)" />
+          <use href="#petal-long" transform="rotate(135)" />
+          <use href="#petal-long" transform="rotate(180)" />
+          <use href="#petal-long" transform="rotate(225)" />
+          <use href="#petal-long" transform="rotate(270)" />
+          <use href="#petal-long" transform="rotate(315)" />
+        </g>
+        <g fill="url(#g-red-inner)" stroke="#c9184a" stroke-width="0.6" transform="scale(0.45) rotate(30)">
+          <use href="#petal-long" transform="rotate(0)" />
+          <use href="#petal-long" transform="rotate(60)" />
+          <use href="#petal-long" transform="rotate(120)" />
+          <use href="#petal-long" transform="rotate(180)" />
+          <use href="#petal-long" transform="rotate(240)" />
+          <use href="#petal-long" transform="rotate(300)" />
+        </g>
+        <circle r="8.5" fill="url(#g-gold)" stroke="#8a6d00" stroke-width="0.8" />
+        <g fill="#fff3b0">
+          <circle cx="-2.5" cy="-2.5" r="1.4" />
+          <circle cx="3" cy="-1" r="1.1" />
+          <circle cx="0" cy="3" r="1.2" />
+        </g>
+      </symbol>
+
+      <symbol id="flower-blue" viewBox="-50 -50 100 100">
+        <g fill="url(#g-blue-petal)" stroke="#4a7fb5" stroke-width="1">
+          <use href="#petal-round" transform="rotate(0)" />
+          <use href="#petal-round" transform="rotate(72)" />
+          <use href="#petal-round" transform="rotate(144)" />
+          <use href="#petal-round" transform="rotate(216)" />
+          <use href="#petal-round" transform="rotate(288)" />
+        </g>
+        <g stroke="#7fb2e5" stroke-width="0.9" stroke-linecap="round" opacity="0.8">
+          <line x1="0" y1="-10" x2="0" y2="-26" transform="rotate(0)" />
+          <line x1="0" y1="-10" x2="0" y2="-26" transform="rotate(72)" />
+          <line x1="0" y1="-10" x2="0" y2="-26" transform="rotate(144)" />
+          <line x1="0" y1="-10" x2="0" y2="-26" transform="rotate(216)" />
+          <line x1="0" y1="-10" x2="0" y2="-26" transform="rotate(288)" />
+        </g>
+        <circle r="8" fill="#ffffff" stroke="#c9ddf2" stroke-width="0.8" />
+        <circle r="3.6" fill="#ffd966" />
+      </symbol>
+    </svg>
+
+    <div class="app">
+      <!-- タイトル -->
+      <section class="screen" id="screen-title" data-active>
+        <header class="logo">
+          <div class="logo-flowers" aria-hidden="true">
+            <svg class="logo-flower"><use href="#flower-red" /></svg>
+            <svg class="logo-flower"><use href="#flower-blue" /></svg>
+          </div>
+          <h1>Flower Reversi</h1>
+          <p class="subtitle">赤と青の花で陣地を咲かせよう</p>
+        </header>
+
+        <div class="panel">
+          <div class="field">
+            <span class="field-label">モード</span>
+            <div class="segmented" data-setting="mode">
+              <button type="button" data-value="solo">一人用</button>
+              <button type="button" data-value="duo">二人用</button>
+            </div>
+          </div>
+
+          <div class="field" data-show-when="solo">
+            <span class="field-label">あなたの花</span>
+            <div class="segmented" data-setting="humanColor">
+              <button type="button" data-value="red"><span class="dot dot-red"></span>赤(先手)</button>
+              <button type="button" data-value="blue"><span class="dot dot-blue"></span>青(後手)</button>
+            </div>
+          </div>
+
+          <div class="field" data-show-when="solo">
+            <span class="field-label">難易度</span>
+            <div class="segmented" data-setting="difficulty">
+              <button type="button" data-value="easy">かんたん</button>
+              <button type="button" data-value="normal">ふつう</button>
+              <button type="button" data-value="hard">むずかしい</button>
+            </div>
+          </div>
+
+          <div class="field" data-show-when="duo">
+            <span class="field-label">交代画面</span>
+            <div class="segmented" data-setting="handoff">
+              <button type="button" data-value="true">あり</button>
+              <button type="button" data-value="false">なし</button>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-primary" id="btn-start">はじめる</button>
+        </div>
+
+        <div class="title-footer">
+          <button type="button" class="btn btn-ghost" id="btn-records">記録</button>
+          <button type="button" class="btn btn-ghost" id="btn-sound" aria-pressed="true">音: オン</button>
+        </div>
+        <p class="points-line">花ポイント <strong id="title-points">0</strong></p>
+        <p class="storage-note" id="storage-note" hidden>この環境では記録を保存できません</p>
+      </section>
+
+      <!-- 対局 -->
+      <section class="screen" id="screen-game">
+        <div class="scoreboard">
+          <div class="player" data-player="1">
+            <svg class="chip"><use href="#flower-red" /></svg>
+            <div class="player-info">
+              <span class="player-name" id="name-red">赤</span>
+              <span class="player-count" id="count-red">2</span>
+            </div>
+          </div>
+          <div class="player" data-player="2">
+            <svg class="chip"><use href="#flower-blue" /></svg>
+            <div class="player-info">
+              <span class="player-name" id="name-blue">青</span>
+              <span class="player-count" id="count-blue">2</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="board-wrap">
+          <div class="board" id="board" role="grid" aria-label="盤面"></div>
+          <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
+        </div>
+
+        <p class="status" id="status" aria-live="polite"></p>
+
+        <div class="game-footer">
+          <button type="button" class="btn btn-ghost" id="btn-quit">やめる</button>
+        </div>
+      </section>
+
+      <!-- 記録 -->
+      <section class="screen" id="screen-records">
+        <h2>記録</h2>
+        <p class="points-big">花ポイント <strong id="records-points">0</strong></p>
+
+        <h3>一人用</h3>
+        <table class="records-table">
+          <thead>
+            <tr><th>難易度</th><th>対戦</th><th>勝</th><th>負</th><th>分</th><th>最高</th></tr>
+          </thead>
+          <tbody id="records-solo"></tbody>
+        </table>
+
+        <h3>二人用</h3>
+        <table class="records-table">
+          <thead>
+            <tr><th>対戦</th><th>赤の勝ち</th><th>青の勝ち</th><th>引き分け</th></tr>
+          </thead>
+          <tbody id="records-duo"></tbody>
+        </table>
+
+        <div class="records-footer">
+          <button type="button" class="btn btn-danger" id="btn-reset">記録をリセット</button>
+          <button type="button" class="btn btn-primary" id="btn-records-back">タイトルへ</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- 交代画面(二人用) -->
+    <div class="overlay handoff" id="overlay-handoff" hidden>
+      <button type="button" class="handoff-inner" id="btn-handoff">
+        <svg class="handoff-flower"><use id="handoff-use" href="#flower-red" /></svg>
+        <span class="handoff-title" id="handoff-title">赤の番です</span>
+        <span class="handoff-sub">端末を渡して、タップしてください</span>
+      </button>
+    </div>
+
+    <!-- 結果 -->
+    <div class="overlay" id="overlay-result" hidden>
+      <div class="dialog result">
+        <svg class="result-flower"><use id="result-use" href="#flower-red" /></svg>
+        <h2 id="result-title">勝ち！</h2>
+        <p class="result-count" id="result-count"></p>
+        <p class="result-score" id="result-score"></p>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-ghost" id="btn-result-title">タイトルへ</button>
+          <button type="button" class="btn btn-primary" id="btn-result-again">もう一度</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 確認ダイアログ -->
+    <div class="overlay" id="overlay-confirm" hidden>
+      <div class="dialog">
+        <p class="confirm-message" id="confirm-message"></p>
+        <div class="dialog-actions">
+          <button type="button" class="btn btn-ghost" id="btn-confirm-no">キャンセル</button>
+          <button type="button" class="btn btn-danger" id="btn-confirm-yes">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
+
     <script type="module" src="./main.js"></script>
   </body>
 </html>

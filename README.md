@@ -1,8 +1,9 @@
 # Flower Reversi
 
-ブラウザだけで遊べるリバーシ系ゲーム。GitHub Pages で公開している。
+赤と青の花で遊ぶリバーシ。ブラウザだけで遊べる。
 
-- 遊ぶ: `https://tinkling-way-games.github.io/flower-reversi/`(公開準備中)
+- 遊ぶ: https://tinkling-way-games.github.io/flower-reversi/
+- 一人用(CPU 対戦・3 段階の難易度)と、1 台の端末を交代で使う二人用がある
 - ログイン不要・通信なし。進行状況などはお使いのブラウザの `localStorage` にのみ保存される。
 
 ## 開発

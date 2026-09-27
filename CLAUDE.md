@@ -40,7 +40,7 @@ npm test         # ユニットテスト (node --test)
 npm run build    # src/ を dist/ にコピー(公開物)
 npm run serve    # dist/ を http://127.0.0.1:5173 で配信(先に build)
 npm run dev      # src/ を直接配信(開発用)
-npm run smoke    # 任意: Playwright があればスマホ幅でスクリーンショットを撮る
+npm run smoke    # 任意: Playwright があればスマホ幅で 1 手打ってスクリーンショットを撮る
 npm run verify   # check + test + build をまとめて実行(コミット前に必ず)
 ```
 
@@ -50,8 +50,13 @@ npm run verify   # check + test + build をまとめて実行(コミット前に
 src/               公開されるゲーム本体(このディレクトリがサイトのルート)
   index.html
   style.css
-  main.js          エントリポイント(DOM・イベント配線のみ)
+  main.js          エントリポイント(起動のみ)
+  ui/              DOM・演出・音(画面遷移とゲーム進行は app.js)
   lib/             DOM に依存しないロジック(テスト対象)
+    board.js       盤面とルール
+    ai.js          CPU の思考(難易度別)
+    score.js       スコア計算と対戦記録
+    settings.js    設定の既定値と検証
     storage.js     localStorage ラッパー(唯一の永続化窓口)
 test/              node --test 用テスト(*.test.js)
 scripts/           依存ゼロの開発スクリプト
@@ -61,7 +66,7 @@ docs/              設計・仕様・運用ドキュメント(公開前提)
 
 ## 実装方針
 
-- **ロジックと描画を分ける**。盤面・合法手・勝敗判定・CPU思考などは `src/lib/` に純粋関数として置き、DOM を触らない。`main.js` / UI 層は薄く保つ。
+- **ロジックと描画を分ける**。盤面・合法手・勝敗判定・CPU思考などは `src/lib/` に純粋関数として置き、DOM を触らない。`src/ui/` はそれらを呼び出して描画するだけにする。
 - `src/lib/` の変更には必ず `test/` のテストを追加・更新する。
 - **モバイルファースト**: タッチ操作前提、縦画面・幅 360px 程度で破綻しないこと。ホバー依存の UI にしない。
 - 保存データにはスキーマバージョンを持たせ、読み込み失敗・破損・容量超過・プライベートモード(`localStorage` が例外を投げる)でもゲームが起動するようにする。
