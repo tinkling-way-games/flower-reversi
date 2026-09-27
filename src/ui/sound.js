@@ -15,7 +15,8 @@ export function setSoundEnabled(value) {
 export function unlock() {
   try {
     ctx ??= new AudioContext();
-    if (ctx.state === 'suspended') ctx.resume();
+    // resume() は Promise を返すので、失敗は catch で握りつぶす(音が鳴らないだけで遊べる)
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   } catch {
     ctx = null;
   }

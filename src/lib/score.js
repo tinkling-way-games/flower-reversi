@@ -10,7 +10,6 @@
 /** @typedef {{ solo: Record<Difficulty, SoloRecord>, duo: DuoRecord, points: number }} Records */
 
 export const RECORDS_KEY = 'records';
-export const RECORDS_VERSION = 1;
 
 export const RESULT_BONUS = { win: 20, draw: 5, lose: 0 };
 export const DIFFICULTY_MULTIPLIER = { easy: 1, normal: 2, hard: 3 };
