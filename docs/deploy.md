@@ -17,7 +17,7 @@ flowchart LR
 
 ## 初回設定(1 回だけ・スマホのブラウザでも可)
 
-1. `main` ブランチを用意する(最初の PR をマージするか、GitHub 上でブランチを作成する)。
+1. `main` ブランチを用意し、デフォルトブランチにする。リポジトリが空の場合は、最初の作業ブランチからそのまま `main` を作成すればよい(この時点では差分が無いので PR は不要)。以降の変更は `main` から作業ブランチを切り、PR でマージする。
 2. リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** にする。
 3. **Actions** タブで「Deploy to GitHub Pages」を実行する(`main` への push でも自動で動く)。
 
