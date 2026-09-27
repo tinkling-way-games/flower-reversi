@@ -1,5 +1,5 @@
 // @ts-check
-import { getLegalMoves, applyMove, opponent, countDiscs, hasLegalMove, SIZE } from './board.js';
+import { getLegalMoves, applyMove, opponent, countDiscs, hasLegalMove, SIZE, RED, EMPTY } from './board.js';
 
 /** @typedef {import('./board.js').Board} Board */
 /** @typedef {import('./board.js').Player} Player */
@@ -89,7 +89,7 @@ function negamax(board, player, depth, alpha, beta, exact) {
 /** @param {Board} board @param {Player} player */
 function finalScore(board, player) {
   const { red, blue } = countDiscs(board);
-  const diff = player === 1 ? red - blue : blue - red;
+  const diff = player === RED ? red - blue : blue - red;
   return diff === 0 ? 0 : Math.sign(diff) * WIN_SCORE + diff;
 }
 
@@ -98,7 +98,7 @@ function evaluate(board, player, myMobility) {
   let positional = 0;
   for (let i = 0; i < SIZE * SIZE; i++) {
     if (board[i] === player) positional += WEIGHTS[i];
-    else if (board[i] !== 0) positional -= WEIGHTS[i];
+    else if (board[i] !== EMPTY) positional -= WEIGHTS[i];
   }
   const theirMobility = getLegalMoves(board, opponent(player)).length;
   return positional + 8 * (myMobility - theirMobility);
