@@ -91,6 +91,11 @@ try {
     await page.click('#btn-confirm-yes');
     await page.click('#btn-records');
     await shot('05-records');
+    if (await page.locator('#btn-garden').count()) {
+      await page.click('#btn-records-back');
+      await page.click('#btn-garden');
+      await shot('06-garden');
+    }
   }
 } finally {
   await browser?.close();

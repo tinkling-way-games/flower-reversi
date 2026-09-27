@@ -57,6 +57,7 @@ src/               公開されるゲーム本体(このディレクトリがサ
     ai.js          CPU の思考(難易度別)
     score.js       スコア計算と対戦記録
     settings.js    設定の既定値と検証
+    garden.js      花の庭(ポイントで見た目を解放)
     storage.js     localStorage ラッパー(唯一の永続化窓口)
 test/              node --test 用テスト(*.test.js)
 scripts/           依存ゼロの開発スクリプト

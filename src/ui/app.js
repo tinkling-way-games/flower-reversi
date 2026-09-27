@@ -6,6 +6,7 @@ import { createInitialBoard, getLegalMoves, applyMove, nextTurn, countDiscs, opp
 import { chooseMove } from '../lib/ai.js';
 import { calcScore, recordSolo, recordDuo, loadRecords, saveRecords, createRecords } from '../lib/score.js';
 import { SETTINGS_KEY, normalizeSettings } from '../lib/settings.js';
+import { GARDEN_KEY, CATEGORIES, ITEMS, normalizeGarden, unlockItem, selectItem, isOwned, findItem } from '../lib/garden.js';
 import { createBoardView } from './board-view.js';
 import * as sound from './sound.js';
 
@@ -24,6 +25,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 export function startApp(store) {
   let settings = normalizeSettings(store.load(SETTINGS_KEY, null));
   let records = loadRecords(store);
+  let garden = normalizeGarden(store.load(GARDEN_KEY, null));
   sound.setSoundEnabled(settings.sound);
 
   const persistSettings = () => store.save(SETTINGS_KEY, settings);
@@ -40,10 +42,11 @@ export function startApp(store) {
   };
 
   const view = createBoardView($('board'), $('fx-layer'), onCellTap);
+  applyGarden();
 
   // ---------- 画面切り替え ----------
 
-  /** @param {'title' | 'game' | 'records'} name */
+  /** @param {'title' | 'game' | 'records' | 'garden'} name */
   function showScreen(name) {
     document.querySelectorAll('.screen').forEach((s) => s.toggleAttribute('data-active', s.id === `screen-${name}`));
     window.scrollTo(0, 0);
@@ -94,6 +97,10 @@ export function startApp(store) {
   $('btn-records').addEventListener('click', () => {
     renderRecords();
     showScreen('records');
+  });
+  $('btn-garden').addEventListener('click', () => {
+    renderGarden();
+    showScreen('garden');
   });
 
   // ---------- 対局 ----------
@@ -345,6 +352,114 @@ export function startApp(store) {
   });
 
   $('btn-records-back').addEventListener('click', () => {
+    renderTitle();
+    showScreen('title');
+  });
+
+  // ---------- 花の庭 ----------
+
+  /** 選択中の見た目を画面に反映する */
+  function applyGarden() {
+    const sel = garden.selected;
+    $('use-flower-red').setAttribute('href', `#flower-${sel.red}`);
+    $('use-flower-blue').setAttribute('href', `#flower-${sel.blue}`);
+    document.body.dataset.board = sel.board;
+    view.setFxScale(sel.effect === 'effect-fubuki' ? 2.2 : 1);
+  }
+
+  /** @param {import('../lib/garden.js').Item} item */
+  function previewOf(item) {
+    const box = document.createElement('div');
+    box.className = 'garden-preview';
+    if (item.category === 'red' || item.category === 'blue') {
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      const use = document.createElementNS(svgNS, 'use');
+      use.setAttribute('href', `#flower-${item.id}`);
+      svg.append(use);
+      box.append(svg);
+    } else if (item.category === 'board') {
+      const sw = document.createElement('div');
+      sw.className = 'swatch';
+      sw.dataset.id = item.id;
+      box.append(sw);
+    } else {
+      const icon = document.createElement('span');
+      icon.className = 'fx-icon';
+      icon.textContent = item.id === 'effect-fubuki' ? '🌸' : '✨';
+      box.append(icon);
+    }
+    return box;
+  }
+
+  function renderGarden() {
+    $('garden-points').textContent = String(records.points);
+    const list = $('garden-list');
+    list.textContent = '';
+    for (const cat of CATEGORIES) {
+      const section = document.createElement('section');
+      section.className = 'garden-category';
+      const h = document.createElement('h3');
+      h.textContent = cat.name;
+      const grid = document.createElement('div');
+      grid.className = 'garden-items';
+      for (const item of ITEMS.filter((i) => i.category === cat.id)) {
+        const owned = isOwned(garden, item.id);
+        const selected = garden.selected[cat.id] === item.id;
+        const card = document.createElement('div');
+        card.className = 'garden-item' + (selected ? ' is-selected' : '') + (owned ? '' : ' is-locked');
+        const name = document.createElement('span');
+        name.className = 'garden-name';
+        name.textContent = item.name;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.dataset.id = item.id;
+        if (selected) {
+          btn.className = 'btn btn-selected';
+          btn.textContent = '使用中';
+          btn.disabled = true;
+        } else if (owned) {
+          btn.className = 'btn btn-ghost';
+          btn.textContent = '使う';
+          btn.dataset.action = 'select';
+        } else {
+          btn.className = 'btn btn-unlock';
+          btn.textContent = `解放 ${item.price}`;
+          btn.dataset.action = 'unlock';
+          btn.disabled = records.points < item.price;
+        }
+        card.append(previewOf(item), name, btn);
+        grid.append(card);
+      }
+      section.append(h, grid);
+      list.append(section);
+    }
+  }
+
+  $('garden-list').addEventListener('click', async (e) => {
+    const btn = /** @type {HTMLElement} */ (e.target).closest('button');
+    if (!btn?.dataset.id || !btn.dataset.action) return;
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'unlock') {
+      const item = findItem(id);
+      if (!item) return;
+      const ok = await confirmDialog(`花ポイント ${item.price} で「${item.name}」を解放しますか？`, '解放する');
+      if (!ok) return;
+      const out = unlockItem(garden, records.points, id);
+      if (!out.ok) return;
+      garden = out.garden;
+      records = { ...records, points: out.points };
+      saveRecords(store, records);
+      sound.placeSound(item.category === 'blue' ? 'blue' : 'red');
+    } else {
+      garden = selectItem(garden, id);
+    }
+    store.save(GARDEN_KEY, garden);
+    applyGarden();
+    renderGarden();
+  });
+
+  $('btn-garden-back').addEventListener('click', () => {
     renderTitle();
     showScreen('title');
   });

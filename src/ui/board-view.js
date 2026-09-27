@@ -24,6 +24,8 @@ const colorName = (p) => (p === RED ? 'red' : 'blue');
 export function createBoardView(boardEl, fxEl, onTap) {
   /** @type {HTMLButtonElement[]} */
   const cells = [];
+  /** 花吹雪などで粒子の量を増やす倍率 */
+  let fxScale = 1;
   boardEl.textContent = '';
   for (let i = 0; i < SIZE * SIZE; i++) {
     const cell = document.createElement('button');
@@ -91,6 +93,8 @@ export function createBoardView(boardEl, fxEl, onTap) {
   function burst(index, kind, count, { spread = 1, delay = 0, size = 10 } = {}) {
     if (reducedMotion()) return;
     const c = centerOf(index);
+    count = Math.round(count * fxScale);
+    spread *= fxScale > 1 ? 1.35 : 1;
     for (let n = 0; n < count; n++) {
       const p = document.createElement('div');
       p.className = `particle ${kind}`;
@@ -191,5 +195,10 @@ export function createBoardView(boardEl, fxEl, onTap) {
     return Math.max(PLACE_MS, lastFlip) + 60;
   }
 
-  return { renderAll, setHints, place, flip, shake, durationOf, colorName };
+  /** @param {number} scale */
+  const setFxScale = (scale) => {
+    fxScale = scale;
+  };
+
+  return { renderAll, setHints, place, flip, shake, durationOf, colorName, setFxScale };
 }
