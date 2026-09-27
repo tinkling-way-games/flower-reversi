@@ -17,9 +17,15 @@ flowchart LR
 
 ## 初回設定(1 回だけ・スマホのブラウザでも可)
 
-1. `main` ブランチを用意する(最初の PR をマージするか、GitHub 上でブランチを作成する)。
-2. リポジトリの **Settings → Pages → Build and deployment → Source** を **GitHub Actions** にする。
-3. **Actions** タブで「Deploy to GitHub Pages」を実行する(`main` への push でも自動で動く)。
+1. リポジトリを **公開(public)** にする。
+   - **Settings → General → Danger Zone → Change repository visibility** で変更する。
+   - 組織の無料プランでは、非公開リポジトリで Pages を使えない(Pages の設定画面にアップグレード案内が出てソースを選べない)。
+2. `main` ブランチを用意し、デフォルトブランチにする。
+   - リポジトリが空の場合は、最初の作業ブランチからそのまま `main` を作成すればよい。
+   - この時点では差分が無いので PR は不要。
+   - 以降の変更は `main` から作業ブランチを切り、PR でマージする。
+3. **Settings → Pages → Build and deployment → Source** を **GitHub Actions** にする。
+4. **Actions** タブで「Deploy to GitHub Pages」を実行する(`main` への push でも自動で動く)。
 
 > [!WARNING]
 > Pages の公開環境 `github-pages` は、既定でデフォルトブランチからのデプロイだけを許可する。`main` をデフォルトブランチにしておくこと。
