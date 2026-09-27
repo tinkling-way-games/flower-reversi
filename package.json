@@ -1,0 +1,19 @@
+{
+  "name": "flower-reversi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A browser-only reversi game published on GitHub Pages.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test": "node --test \"test/**/*.test.js\"",
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/serve.mjs dist",
+    "dev": "node scripts/serve.mjs src",
+    "smoke": "node scripts/smoke.mjs",
+    "verify": "npm run check && npm test && npm run build"
+  }
+}
