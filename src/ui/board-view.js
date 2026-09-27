@@ -10,6 +10,8 @@ import { SIZE, RED, BLUE, EMPTY, toCoord } from '../lib/board.js';
 export const FLIP_STAGGER_MS = 90;
 export const FLIP_MS = 520;
 export const PLACE_MS = 650;
+/** 同時に飛ばす粒子の上限。多すぎると iPhone で重くなり発熱する */
+const MAX_PARTICLES = 48;
 
 const reducedMotion = () => globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
 
@@ -133,7 +135,9 @@ export function createBoardView(boardEl, fxEl, onTap) {
   function burst(index, kind, count, { spread = 1, delay = 0, size = 10 } = {}) {
     if (reducedMotion()) return;
     const c = centerOf(index);
-    count = Math.round(count * fxScale);
+    const limit = Math.floor(MAX_PARTICLES * Math.max(1, fxScale / 1.5));
+    const room = Math.max(0, limit - fxEl.childElementCount);
+    count = Math.min(Math.round(count * fxScale), room);
     spread *= fxScale > 1 ? 1.35 : 1;
     for (let n = 0; n < count; n++) {
       const p = document.createElement('div');
@@ -147,9 +151,12 @@ export function createBoardView(boardEl, fxEl, onTap) {
       p.style.setProperty('--x1', `${c.x + Math.cos(angle) * dist}px`);
       p.style.setProperty('--y1', `${c.y + Math.sin(angle) * dist + c.size * 0.3}px`);
       p.style.setProperty('--rot', `${(Math.random() - 0.5) * 720}deg`);
-      p.style.setProperty('--dur', `${700 + Math.random() * 500}ms`);
+      const dur = 700 + Math.random() * 500;
+      p.style.setProperty('--dur', `${dur}ms`);
       p.style.animationDelay = `${delay}ms`;
       p.addEventListener('animationend', () => p.remove());
+      // animationend が来ない場合(バックグラウンド移行など)でも残さない
+      later(() => p.remove(), delay + dur + 300);
       fxEl.append(p);
     }
   }

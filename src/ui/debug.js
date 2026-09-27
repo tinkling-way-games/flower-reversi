@@ -40,8 +40,19 @@ function render() {
   banner.textContent = `エラーが発生しました(タップで閉じる)\n${errors.join('\n')}`;
 }
 
+/** 詳細が隠された外部スクリプトのエラー("Script error.")の件数 */
+export let externalErrors = 0;
+
 export function installErrorReporter() {
-  window.addEventListener('error', (e) => reportError(e.error ?? e.message, 'error'));
+  window.addEventListener('error', (e) => {
+    // このゲームのスクリプトは同じオリジンなので、詳細付きで報告される。
+    // 詳細の無い "Script error." はブラウザの機能や拡張機能など外部由来なので、帯には出さない
+    if (!e.error && /^Script error\.?$/.test(e.message)) {
+      externalErrors++;
+      return;
+    }
+    reportError(e.error ?? e.message, 'error');
+  });
   window.addEventListener('unhandledrejection', (e) => reportError(e.reason, 'promise'));
 }
 
