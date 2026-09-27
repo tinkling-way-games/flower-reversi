@@ -413,6 +413,9 @@ button {
 .disc-pop {
   position: absolute;
   inset: 0;
+  /* 花(3D 回転する要素)はタップを受けない。タップ先を常にマスのボタンにする。
+     Safari では 3D 変形した要素の当たり判定が不安定になることがあるため */
+  pointer-events: none;
 }
 
 .disc-pop.is-flipping {
