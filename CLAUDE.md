@@ -2,6 +2,7 @@
 
 このファイルは、このリポジトリで作業するエージェント(Claude Code)向けの作業指示書。
 人間向けの概要は `README.md`、詳細は `docs/` を参照。
+`README.md` は遊ぶ人向け(ゲームの紹介が主題、Claude Code で作ったことは副題)。開発手順は `docs/development.md` に書き、README に作業メモを足さない。
 
 ## プロジェクト概要
 
