@@ -65,11 +65,38 @@ try {
   page.on('console', (m) => m.type() === 'error' && errors.push(`console: ${m.text()}`));
   page.on('requestfailed', (r) => errors.push(`requestfailed: ${r.url()}`));
 
-  await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: 'networkidle' });
+  const base = `http://127.0.0.1:${port}/`;
   await mkdir(outDir, { recursive: true });
-  const file = join(outDir, 'mobile.png');
-  await page.screenshot({ path: file, fullPage: true });
-  console.log(`smoke: スクリーンショット -> ${file}`);
+  const shot = async (name) => {
+    const file = join(outDir, `${name}.png`);
+    await page.screenshot({ path: file });
+    console.log(`smoke: スクリーンショット -> ${file}`);
+  };
+
+  await page.goto(base, { waitUntil: 'networkidle' });
+  await shot('01-title');
+
+  // ゲーム画面がある場合は、1 手打って演出と CPU の応手まで確認する
+  if (await page.locator('#btn-start').count()) {
+    await page.click('#btn-start');
+    await page.waitForSelector('.cell.is-hint');
+    await shot('02-game-start');
+    await page.locator('.cell.is-hint').first().click();
+    await page.waitForTimeout(350);
+    await shot('03-game-effect');
+    await page.waitForSelector('.cell.is-hint', { timeout: 10000 });
+    await page.waitForTimeout(300);
+    await shot('04-game-after-cpu');
+    await page.click('#btn-quit');
+    await page.click('#btn-confirm-yes');
+    await page.click('#btn-records');
+    await shot('05-records');
+    if (await page.locator('#btn-garden').count()) {
+      await page.click('#btn-records-back');
+      await page.click('#btn-garden');
+      await shot('06-garden');
+    }
+  }
 } finally {
   await browser?.close();
   server.kill();
