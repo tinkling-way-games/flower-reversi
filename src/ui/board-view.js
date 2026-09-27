@@ -26,6 +26,23 @@ export function createBoardView(boardEl, fxEl, onTap) {
   const cells = [];
   /** 花吹雪などで粒子の量を増やす倍率 */
   let fxScale = 1;
+  /** 予約中の裏返し演出。盤面を描き直すときに取り消す @type {Set<ReturnType<typeof setTimeout>>} */
+  const timers = new Set();
+
+  /** @param {() => void} fn @param {number} ms */
+  function later(fn, ms) {
+    const id = setTimeout(() => {
+      timers.delete(id);
+      fn();
+    }, ms);
+    timers.add(id);
+  }
+
+  function cancelPending() {
+    for (const id of timers) clearTimeout(id);
+    timers.clear();
+    fxEl.textContent = '';
+  }
   boardEl.textContent = '';
   for (let i = 0; i < SIZE * SIZE; i++) {
     const cell = document.createElement('button');
@@ -55,8 +72,9 @@ export function createBoardView(boardEl, fxEl, onTap) {
     return pop;
   }
 
-  /** 盤面全体を演出なしで描き直す @param {Board} board */
+  /** 盤面全体を演出なしで描き直す。予約中の演出は取り消す @param {Board} board */
   function renderAll(board) {
+    cancelPending();
     board.forEach((cell, i) => {
       cells[i].textContent = '';
       cells[i].classList.remove('is-last', 'is-hint');
@@ -166,7 +184,7 @@ export function createBoardView(boardEl, fxEl, onTap) {
       const pop = /** @type {HTMLElement | null} */ (cells[index].querySelector('.disc-pop'));
       const disc = discOf(index);
       if (!pop || !disc) continue;
-      setTimeout(() => {
+      later(() => {
         pop.classList.remove('is-flipping', 'bloom-red', 'bloom-blue');
         void pop.offsetWidth; // アニメーションを再始動させる
         pop.classList.add('is-flipping');

@@ -2,13 +2,14 @@
 /**
  * 画面遷移とゲーム進行。ルールは lib/、見た目は board-view.js に任せる。
  */
-import { createInitialBoard, getLegalMoves, applyMove, nextTurn, countDiscs, opponent, RED, BLUE } from '../lib/board.js';
+import { createInitialBoard, getLegalMoves, applyMove, nextTurn, countDiscs, opponent, hasLegalMove, RED, BLUE } from '../lib/board.js';
 import { chooseMove } from '../lib/ai.js';
 import { calcScore, recordSolo, recordDuo, loadRecords, saveRecords, createRecords } from '../lib/score.js';
 import { SETTINGS_KEY, normalizeSettings } from '../lib/settings.js';
 import { GARDEN_KEY, CATEGORIES, ITEMS, normalizeGarden, unlockItem, selectItem, isOwned, findItem } from '../lib/garden.js';
 import { createBoardView } from './board-view.js';
 import * as sound from './sound.js';
+import { reportError, isDebug, startDebugPanel } from './debug.js';
 
 /** @typedef {import('../lib/board.js').Player} Player */
 /** @typedef {import('../lib/board.js').Cell} Cell */
@@ -37,6 +38,8 @@ export function startApp(store) {
     /** @type {Player} */ turn: RED,
     /** @type {Player | null} */ cpu: null,
     busy: false,
+    /** 盤面を更新したが、まだ手番を進めていない打ち手(エラーからの復帰用) @type {Player | null} */
+    lastMover: /** @type {Player | null} */ (null),
     mode: settings.mode,
     difficulty: settings.difficulty,
   };
@@ -110,6 +113,7 @@ export function startApp(store) {
     game.board = createInitialBoard();
     game.turn = RED;
     game.busy = false;
+    game.lastMover = null;
     game.mode = settings.mode;
     game.difficulty = settings.difficulty;
     game.cpu = game.mode === 'solo' ? (settings.humanColor === 'red' ? BLUE : RED) : null;
@@ -160,8 +164,13 @@ export function startApp(store) {
       setStatus('CPU が考え中…');
       setTimeout(() => {
         if (session !== game.session) return;
-        const move = chooseMove(game.board, game.turn, game.difficulty);
-        playMove(move, session);
+        try {
+          const move = chooseMove(game.board, game.turn, game.difficulty);
+          playMove(move, session);
+        } catch (e) {
+          reportError(e, 'CPU');
+          recover(session);
+        }
       }, CPU_THINK_MS);
     } else {
       view.setHints(getLegalMoves(game.board, game.turn).map((m) => m.index));
@@ -182,24 +191,65 @@ export function startApp(store) {
 
   /** @param {number} index @param {number} session */
   async function playMove(index, session) {
+    try {
+      await playMoveSteps(index, session);
+    } catch (e) {
+      reportError(e, 'playMove');
+      recover(session);
+    }
+  }
+
+  /**
+   * 予期しないエラーの後、盤面の状態から手番を立て直して対局を続けられるようにする。
+   * @param {number} session
+   */
+  function recover(session) {
+    if (session !== game.session) return;
+    $('overlay-handoff').hidden = true;
+    $('toast').hidden = true;
+    view.renderAll(game.board);
+    if (game.lastMover !== null) {
+      const next = nextTurn(game.board, game.lastMover);
+      game.lastMover = null;
+      if (!next) {
+        finishGame();
+        return;
+      }
+      game.turn = next.player;
+    } else if (!hasLegalMove(game.board, game.turn)) {
+      const next = nextTurn(game.board, opponent(game.turn));
+      if (!next) {
+        finishGame();
+        return;
+      }
+      game.turn = next.player;
+    }
+    game.busy = false;
+    beginTurn(session);
+  }
+
+  /** @param {number} index @param {number} session */
+  async function playMoveSteps(index, session) {
     game.busy = true;
     view.setHints([]);
     setStatus('');
     const player = game.turn;
     const color = view.colorName(player);
     const { board, flips } = applyMove(game.board, index, player);
+    game.board = board;
+    game.lastMover = player;
 
     view.place(index, player);
     sound.placeSound(color);
     const schedule = view.flip(index, flips, player);
     schedule.forEach(({ delay }, n) => sound.flipSound(color, n, delay / 1000));
 
-    game.board = board;
     await wait(view.durationOf(schedule));
     if (session !== game.session) return;
     updateScoreboard(true);
 
     const next = nextTurn(game.board, player);
+    game.lastMover = null;
     if (!next) {
       await wait(400);
       if (session === game.session) finishGame();
@@ -484,6 +534,20 @@ export function startApp(store) {
       $('btn-confirm-yes').addEventListener('click', yes);
       $('btn-confirm-no').addEventListener('click', no);
     });
+  }
+
+  if (isDebug()) {
+    startDebugPanel(() => ({
+      screen: document.querySelector('.screen[data-active]')?.id,
+      mode: game.mode,
+      turn: game.turn,
+      cpu: game.cpu,
+      busy: game.busy,
+      lastMover: game.lastMover,
+      legal: game.turn ? getLegalMoves(game.board, game.turn).map((m) => m.index) : [],
+      discs: countDiscs(game.board),
+      session: game.session,
+    }));
   }
 
   renderTitle();
