@@ -25,7 +25,17 @@ export function unlock() {
 /**
  * @param {{ freq: number, type?: OscillatorType, start?: number, dur?: number, gain?: number }} tone
  */
-function play({ freq, type = 'sine', start = 0, dur = 0.4, gain = 0.15 }) {
+function play(tone) {
+  // 端末によっては AudioContext が中断・終了していて例外になる。音が鳴らないだけにとどめる
+  try {
+    playTone(tone);
+  } catch {
+    // 無視
+  }
+}
+
+/** @param {{ freq: number, type?: OscillatorType, start?: number, dur?: number, gain?: number }} tone */
+function playTone({ freq, type = 'sine', start = 0, dur = 0.4, gain = 0.15 }) {
   if (!enabled || !ctx) return;
   const t0 = ctx.currentTime + start;
   const osc = ctx.createOscillator();
