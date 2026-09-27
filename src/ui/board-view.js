@@ -51,9 +51,31 @@ export function createBoardView(boardEl, fxEl, onTap) {
     cell.setAttribute('role', 'gridcell');
     const { row, col } = toCoord(i);
     cell.setAttribute('aria-label', `${'abcdefgh'[col]}${row + 1}`);
-    cell.addEventListener('click', () => onTap(i));
     boardEl.append(cell);
     cells.push(cell);
+  }
+
+  // タップは盤面全体で 1 か所で受け、座標からマスを求める。
+  // iPhone の Safari では、3D 回転する花の影響でタップの当たり先がずれ、
+  // マスのボタンに届かなくなることがあるため、要素の当たり判定に頼らない。
+  boardEl.addEventListener('click', (e) => {
+    const index = e.detail === 0 ? indexFromTarget(e.target) : indexFromPoint(e.clientX, e.clientY);
+    if (index >= 0) onTap(index);
+  });
+
+  /** キーボード操作(座標なし)のとき @param {EventTarget | null} target */
+  function indexFromTarget(target) {
+    const cell = target instanceof Element ? target.closest('.cell') : null;
+    return cells.indexOf(/** @type {HTMLButtonElement} */ (cell));
+  }
+
+  /** @param {number} x @param {number} y */
+  function indexFromPoint(x, y) {
+    for (let i = 0; i < cells.length; i++) {
+      const r = cells[i].getBoundingClientRect();
+      if (x >= r.left && x < r.right && y >= r.top && y < r.bottom) return i;
+    }
+    return -1;
   }
 
   /** @param {number} index */
