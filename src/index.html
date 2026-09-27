@@ -37,6 +37,10 @@
           <stop offset="0.35" stop-color="#d6ecff" />
           <stop offset="1" stop-color="#5b9bd5" />
         </radialGradient>
+        <radialGradient id="g-shadow" cx="50%" cy="50%" r="50%">
+          <stop offset="0.55" stop-color="#000" stop-opacity="0.35" />
+          <stop offset="1" stop-color="#000" stop-opacity="0" />
+        </radialGradient>
         <path id="petal-long" d="M0 0 C-13 -9 -13 -33 0 -44 C13 -33 13 -9 0 0Z" />
         <circle id="petal-round" cx="0" cy="-19" r="17" />
         <radialGradient id="g-camellia" cx="50%" cy="90%" r="90%">
@@ -136,9 +140,11 @@
 
       <!-- 選択中の花。花の庭で中の href を差し替える -->
       <symbol id="flower-red" viewBox="-50 -50 100 100">
+        <circle cx="0" cy="4" r="48" fill="url(#g-shadow)" />
         <use id="use-flower-red" href="#flower-red-dahlia" x="-50" y="-50" width="100" height="100" />
       </symbol>
       <symbol id="flower-blue" viewBox="-50 -50 100 100">
+        <circle cx="0" cy="4" r="48" fill="url(#g-shadow)" />
         <use id="use-flower-blue" href="#flower-blue-nemophila" x="-50" y="-50" width="100" height="100" />
       </symbol>
 

@@ -128,7 +128,7 @@ button {
 .logo-flower {
   width: 84px;
   height: 84px;
-  animation: sway 4s ease-in-out infinite;
+  animation: sway 4s ease-in-out 2;
 }
 
 .logo-flower:nth-child(2) {
@@ -364,7 +364,7 @@ button {
   inset: 38%;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.55);
-  animation: hint-pulse 1.4s ease-in-out infinite;
+  animation: hint-in 300ms ease-out;
 }
 
 .cell.is-last {
@@ -373,10 +373,10 @@ button {
     inset 0 0 0 2px rgba(255, 230, 150, 0.7);
 }
 
-@keyframes hint-pulse {
-  50% {
-    transform: scale(0.7);
-    opacity: 0.5;
+@keyframes hint-in {
+  from {
+    transform: scale(0);
+    opacity: 0;
   }
 }
 
@@ -397,7 +397,6 @@ button {
   inset: 0;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
 }
 
 .face svg {
@@ -440,7 +439,6 @@ button {
   0% {
     transform: scale(0) rotate(-160deg);
     opacity: 0;
-    filter: brightness(2);
   }
   60% {
     transform: scale(1.22) rotate(12deg);
@@ -448,7 +446,6 @@ button {
   }
   100% {
     transform: scale(1) rotate(0);
-    filter: none;
   }
 }
 
@@ -500,8 +497,8 @@ button {
 }
 
 .particle.sparkle {
-  background: radial-gradient(circle, #fffbe6 0, #ffd166 45%, transparent 70%);
-  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0, #fff3b0 25%, #ffd166 45%, transparent 70%);
 }
 
 @keyframes particle {
@@ -677,7 +674,7 @@ button {
 .result-flower {
   width: 96px;
   height: 96px;
-  animation: sway 3s ease-in-out infinite;
+  animation: sway 3s ease-in-out 2;
 }
 
 .result h2 {
@@ -737,7 +734,7 @@ button {
 .handoff-flower {
   width: 120px;
   height: 120px;
-  animation: sway 3s ease-in-out infinite;
+  animation: sway 3s ease-in-out 2;
 }
 
 .handoff-title {

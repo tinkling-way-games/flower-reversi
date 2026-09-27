@@ -9,7 +9,7 @@ import { SETTINGS_KEY, normalizeSettings } from '../lib/settings.js';
 import { GARDEN_KEY, CATEGORIES, ITEMS, normalizeGarden, unlockItem, selectItem, isOwned, findItem } from '../lib/garden.js';
 import { createBoardView } from './board-view.js';
 import * as sound from './sound.js';
-import { reportError, isDebug, startDebugPanel } from './debug.js';
+import { reportError, isDebug, startDebugPanel, externalErrors } from './debug.js';
 
 /** @typedef {import('../lib/board.js').Player} Player */
 /** @typedef {import('../lib/board.js').Cell} Cell */
@@ -575,6 +575,7 @@ export function startApp(store) {
     startDebugPanel(() => ({
       version,
       taps: tapLog.join(' '),
+      externalErrors,
       pointer: lastPointer,
       moves: game.board.length - INITIAL_DISCS - countDiscs(game.board).empty,
       screen: document.querySelector('.screen[data-active]')?.id,
