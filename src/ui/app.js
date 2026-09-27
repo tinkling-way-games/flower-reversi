@@ -17,6 +17,8 @@ import { reportError, isDebug, startDebugPanel } from './debug.js';
 const DIFFICULTY_LABEL = { easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' };
 const CPU_THINK_MS = 550;
 const PASS_MS = 1300;
+/** 初期配置の花の数(何手目かの計算用) */
+const INITIAL_DISCS = 4;
 
 /** @param {string} id */
 const $ = (id) => /** @type {HTMLElement} */ (document.getElementById(id));
@@ -194,10 +196,12 @@ export function startApp(store) {
     playMove(index, game.session);
   }
 
-  /** デバッグ表示用のタップ記録(直近 4 件) @type {string[]} */
+  /** デバッグ表示用のタップ記録(直近 4 件)。?debug のときだけ記録する @type {string[]} */
   const tapLog = [];
+  const debug = isDebug();
   /** @param {number} index @param {string} result */
   function logTap(index, result) {
+    if (!debug) return;
     tapLog.unshift(`${index}:${result}`);
     tapLog.length = Math.min(tapLog.length, 4);
   }
@@ -549,7 +553,7 @@ export function startApp(store) {
     });
   }
 
-  if (isDebug()) {
+  if (debug) {
     // 指が最初に触れた要素。盤面の上に見えない要素が被っていないかを確かめる
     let lastPointer = '';
     document.addEventListener(
@@ -572,7 +576,7 @@ export function startApp(store) {
       version,
       taps: tapLog.join(' '),
       pointer: lastPointer,
-      moves: 60 - countDiscs(game.board).empty,
+      moves: game.board.length - INITIAL_DISCS - countDiscs(game.board).empty,
       screen: document.querySelector('.screen[data-active]')?.id,
       mode: game.mode,
       turn: game.turn,
