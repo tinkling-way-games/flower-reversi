@@ -135,7 +135,9 @@ export function createBoardView(boardEl, fxEl, onTap) {
   function burst(index, kind, count, { spread = 1, delay = 0, size = 10 } = {}) {
     if (reducedMotion()) return;
     const c = centerOf(index);
-    count = Math.min(Math.round(count * fxScale), MAX_PARTICLES * Math.max(1, fxScale / 1.5) - fxEl.childElementCount);
+    const limit = Math.floor(MAX_PARTICLES * Math.max(1, fxScale / 1.5));
+    const room = Math.max(0, limit - fxEl.childElementCount);
+    count = Math.min(Math.round(count * fxScale), room);
     spread *= fxScale > 1 ? 1.35 : 1;
     for (let n = 0; n < count; n++) {
       const p = document.createElement('div');
@@ -154,7 +156,7 @@ export function createBoardView(boardEl, fxEl, onTap) {
       p.style.animationDelay = `${delay}ms`;
       p.addEventListener('animationend', () => p.remove());
       // animationend が来ない場合(バックグラウンド移行など)でも残さない
-      setTimeout(() => p.remove(), delay + dur + 300);
+      later(() => p.remove(), delay + dur + 300);
       fxEl.append(p);
     }
   }
